@@ -1,0 +1,38 @@
+---
+title: "Project"
+format: html
+---
+In this project, I plan to explore the connection between the nationality of a pitcher in the MLB and the pitches that they throw. I will be using data from the MLB Statcast database to analyze the pitch types thrown by pitchers from different countries. The goal is to determine if there are any significant differences in pitch selection based on nationality.
+
+# Project
+
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+
+# Read pitch data and calculate percentage of pitch types by country
+pitch_data <- read_csv("data/pitch_data_5_countries.csv", show_col_types = FALSE)
+
+pitch_summary <- pitch_data |>
+  filter(!is.na(pitch_name), !pitch_name %in% c("Pitch Out", "Eephus")) |>
+  count(country, pitch_name) |>
+  group_by(country) |>
+  mutate(pct = n / sum(n)) |>
+  ungroup()
+
+# Create horizontal bar plot faceted across countries
+ggplot(pitch_summary, aes(x = pct, y = reorder(pitch_name, pct), fill = country)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~country, nrow = 1) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    title = "Pitch Type Preference by Pitcher Nationality",
+    subtitle = "MLB regular season Statcast sample across 5 countries",
+    x = "Usage (%)",
+    y = NULL,
+    caption = "Source: MLB Statcast"
+  ) +
+  theme_minimal()
+```
